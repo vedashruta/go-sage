@@ -1,0 +1,4 @@
+node_modules
+go.sum
+.vscode
+__debug_*
