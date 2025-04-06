@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Init initializes the global in-memory model that holds the index, document store, and ordering.
 func Init() {
 	model = Model{
 		index: make(map[string][]string),
@@ -15,25 +16,30 @@ func Init() {
 	}
 }
 
+// Index indexes a given document into the in-memory model using the specified docID.
+// It normalizes, tokenizes, removes stop words, and stems the document fields,
+// then builds an inverted index for fast lookup.
+// Returns the duration of indexing, number of tokens indexed, and any error encountered.
 func Index(doc map[string]interface{}, docID string) (duration time.Duration, count int, err error) {
 	start := time.Now()
 	model.mu.Lock()
 	defer model.mu.Unlock()
 
-	// Overwrite the document
+	// Store the document (overwrite if it already exists)
 	model.store[docID] = doc
 
-	// Remove the docID from model.order if it already exists
+	// Remove the docID from ordering if it already exists to avoid duplicates
 	for i, id := range model.order {
 		if id == docID {
 			model.order = append(model.order[:i], model.order[i+1:]...)
 			break
 		}
 	}
-	// Re-append to mark as latest
+
+	// Append the docID to the end of the order list
 	model.order = append(model.order, docID)
 
-	// Indexing
+	// Build the inverted index for the document
 	for _, val := range doc {
 		strVal := fmt.Sprintf("%v", val)
 		tokens := stemTokens(removeStopWords(tokenize(normalize(strVal))))

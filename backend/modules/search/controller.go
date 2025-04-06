@@ -17,6 +17,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// get handles GET /get requests.
+// It fetches a limited number of documents from the search engine.
 func get(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -41,6 +43,8 @@ func get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getDoc handles GET /getDoc requests with a `query` parameter.
+// It fetches matching documents from the search engine.
 func getDoc(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -77,6 +81,8 @@ func getDoc(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// stats handles GET /stats requests.
+// It returns total indexed document count.
 func stats(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -91,6 +97,8 @@ func stats(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// search handles POST /search requests.
+// It processes complex search queries with filters and pagination.
 func search(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
@@ -132,6 +140,8 @@ func search(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
+// upload handles file uploads to the server.
+// It supports .csv and .parquet files, saves them locally, and parses them.
 func upload(w http.ResponseWriter, r *http.Request) {
 	// Parse multipart form
 	if err := r.ParseMultipartForm(10 << 20); err != nil {

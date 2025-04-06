@@ -159,6 +159,8 @@ func TestIndex(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	Init()
+
+	// Define the documents to index
 	docs := []map[string]interface{}{
 		{
 			"title": "The quick brown fox jumps over the lazy dog",
@@ -173,6 +175,8 @@ func TestSearch(t *testing.T) {
 			"meta":  "In the wild",
 		},
 	}
+
+	// Index the documents
 	for _, doc := range docs {
 		docID := uuid.NewString()
 		_, _, err := Index(doc, docID)
@@ -181,7 +185,7 @@ func TestSearch(t *testing.T) {
 		}
 	}
 
-	// Test case 1: Filter for "lazy fox" — should return only doc[1]
+	// Test case 1: Filter for "bird" — should return only doc[1]
 	filter := map[string]interface{}{
 		"title": "bird",
 	}
@@ -189,9 +193,25 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Validate meta data
+	meta := result[0]["meta"].(map[string]interface{})
+	if meta == nil {
+		t.Fatal("Meta data is missing")
+	}
+
+	// Validate meta fields
+	if totalRecords, ok := meta["totalRecords"].(int); !ok || totalRecords != 3 {
+		t.Fatalf("Expected totalRecords to be 3, got %v", totalRecords)
+	}
+	if returnedRecords, ok := meta["returnedRecords"].(int); !ok || returnedRecords != 1 {
+		t.Fatalf("Expected returnedRecords to be 1, got %v", returnedRecords)
+	}
+
+	// Validate the returned document(s)
 	expected := []map[string]interface{}{docs[1]}
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected, result)
+	if !reflect.DeepEqual(result[1:], expected) {
+		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected, result[1:])
 	}
 
 	// Test case 2: Filter for "fox" — should return all 3
@@ -202,9 +222,28 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Validate meta data for filter2
+	meta2 := result2[0]["meta"].(map[string]interface{})
+	if meta2 == nil {
+		t.Fatal("Meta data is missing")
+	}
+
+	// Validate meta fields for filter2
+	if matchedRecords, ok := meta2["matchedRecords"].(int); !ok || matchedRecords != 3 {
+		t.Fatalf("Expected matchedRecords to be 3, got %v", matchedRecords)
+	}
+	if totalRecords, ok := meta2["totalRecords"].(int); !ok || totalRecords != 3 {
+		t.Fatalf("Expected totalRecords to be 3, got %v", totalRecords)
+	}
+	if returnedRecords, ok := meta2["returnedRecords"].(int); !ok || returnedRecords != 3 {
+		t.Fatalf("Expected returnedRecords to be 3, got %v", returnedRecords)
+	}
+
+	// Validate the returned documents for filter2
 	expected2 := []map[string]interface{}{docs[0], docs[1], docs[2]}
-	if !reflect.DeepEqual(result2, expected2) {
-		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected2, result2)
+	if !reflect.DeepEqual(result2[1:], expected2) {
+		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected2, result2[1:])
 	}
 
 	// Test case 3: Filter for "daylight" — should return only doc[2]
@@ -215,24 +254,62 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Validate meta data for filter3
+	meta3 := result3[0]["meta"].(map[string]interface{})
+	if meta3 == nil {
+		t.Fatal("Meta data is missing")
+	}
+
+	// Validate meta fields for filter3
+	if matchedRecords, ok := meta3["matchedRecords"].(int); !ok || matchedRecords != 1 {
+		t.Fatalf("Expected matchedRecords to be 1, got %v", matchedRecords)
+	}
+	if totalRecords, ok := meta3["totalRecords"].(int); !ok || totalRecords != 3 {
+		t.Fatalf("Expected totalRecords to be 3, got %v", totalRecords)
+	}
+	if returnedRecords, ok := meta3["returnedRecords"].(int); !ok || returnedRecords != 1 {
+		t.Fatalf("Expected returnedRecords to be 1, got %v", returnedRecords)
+	}
+
+	// Validate the returned document(s) for filter3
 	expected3 := []map[string]interface{}{docs[2]}
-	if !reflect.DeepEqual(result3, expected3) {
-		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected3, result3)
+	if !reflect.DeepEqual(result3[1:], expected3) {
+		t.Errorf("Search failed.\nExpected: %v\nGot: %v", expected3, result3[1:])
 	}
 
 	// Test case 4: Filter for "fox" — should return all 3, limit the results to 1
 	filter4 := map[string]interface{}{
 		"title": "fox",
 	}
-	opts := FindOptions{
-		Limit: 1,
+	opts := &FindOptions{
+		Limit: 2, // Limit is set to 2 for documents
 	}
-	result4, err := Find(filter4, &opts)
+	result4, err := Find(filter4, opts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result4) != 1 {
-		t.Fatal()
+
+	// 2 is the limit + 1 is the meta
+	if len(result4) != 3 {
+		t.Fatalf("Expected 3 results (meta + 2 documents), got %d", len(result4))
+	}
+
+	// Validate meta data for filter4
+	meta4 := result4[0]["meta"].(map[string]interface{})
+	if meta4 == nil {
+		t.Fatal("Meta data is missing")
+	}
+
+	// Validate meta fields for filter4
+	if matchedRecords, ok := meta4["matchedRecords"].(int); !ok || matchedRecords != 3 {
+		t.Fatalf("Expected matchedRecords to be 3, got %v", matchedRecords)
+	}
+	if totalRecords, ok := meta4["totalRecords"].(int); !ok || totalRecords != 3 {
+		t.Fatalf("Expected totalRecords to be 3, got %v", totalRecords)
+	}
+	if returnedRecords, ok := meta4["returnedRecords"].(int); !ok || returnedRecords != 2 {
+		t.Fatalf("Expected returnedRecords to be 2, got %v", returnedRecords)
 	}
 }
 
