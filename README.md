@@ -49,7 +49,6 @@
 ☑️ Concurrency-safe CSV & Parquet parsing</br>
 ☑️ Fast document retrieval</br>
 ☑️ Meta search stats (matched/returned/total/time)</br>
-☑️ Frontend (React) to visualize results</br>
 
 ## 🧪 Testing & Benchmark
 
