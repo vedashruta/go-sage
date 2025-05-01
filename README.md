@@ -1,6 +1,6 @@
 # 🦊 GO Sage — In-Memory Search Engine in Golang
 
-**GO Sage** is a blazing fast, in-memory full-text search engine written in Golang. It processes large datasets (like 24k+ CSV records) with stemming, stop-word filtering, and indexing — all designed for sub-second search latency.
+**GO Sage** is a blazing fast, in-memory full-text search engine written in Golang. It processes large datasets with stemming, stop-word filtering, and indexing — all designed for sub-second search latency.
 
 ---
 
